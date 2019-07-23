@@ -17,6 +17,9 @@ public class NoteActivity extends AppCompatActivity {
     public static final int POSITION_NOT_SET = -1;
     private NoteInfo mNote;
     private boolean mIsNewNote;
+    private Spinner mSpinnerCourses;
+    private EditText mTextNoteTitle;
+    private EditText mTextNoteText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,20 +28,20 @@ public class NoteActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Spinner spinnerCourses = findViewById(R.id.spinner_courses);
+        mSpinnerCourses = findViewById(R.id.spinner_courses);
 
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
 
         // Create Adapter --> ArrayAdapter in this case
         ArrayAdapter<CourseInfo> adapterCoures = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, courses);
         adapterCoures.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCourses.setAdapter(adapterCoures);
+        mSpinnerCourses.setAdapter(adapterCoures);
 
         readDisplayStateValues();
-        EditText textNoteTitle = findViewById(R.id.text_node_title);
-        EditText textNoteText = findViewById(R.id.text_note_text);
+        mTextNoteTitle = findViewById(R.id.text_node_title);
+        mTextNoteText = findViewById(R.id.text_note_text);
 
-        displayNote(spinnerCourses, textNoteTitle, textNoteText);
+        displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
 
     }
 
@@ -77,10 +80,25 @@ public class NoteActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_send_mail) {
+            sendEmail();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void sendEmail() {
+        CourseInfo course = (CourseInfo) mSpinnerCourses.getSelectedItem();
+        String subject = mTextNoteTitle.getText().toString();
+        String text = "Checkout what I learned in the Pluralsight course \"" + course.getTitle() +
+                "\"\n" + mTextNoteText.getText().toString();
+
+        // Create the implicit intent for email
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("message/rfc2822");
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, text);
+        startActivity(intent);
     }
 }
